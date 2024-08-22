@@ -1,13 +1,21 @@
-import Footer from "./components/Footer";
-import Main from "./components/Main";
-import NavBar from "./components/NavBar";
+import Landpage from "./Landpage";
+import Dashboard from "./pages/Dashboard";
+import LoginPage from "./pages/LoginPage";
+import Register from "./pages/Register";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 export default function App() {
   return (
-    <div >
-      <NavBar />
-      <Main/>
-      <Footer/>
+    <div>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/register" element={<Register />} />
+          <Route path="/dashboard" element={<Dashboard/>} />
+          <Route path="/" element={<Landpage />} />
+          <Route path="*" element={<h1>404 - Page Not Found</h1>} />
+          <Route path="/login" element={<LoginPage/>}/>
+        </Routes>
+      </BrowserRouter>
     </div>
   );
 }
