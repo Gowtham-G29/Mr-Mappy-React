@@ -1,186 +1,163 @@
-import { useEffect, useState } from "react";
-// import { userDetailsApi } from "../services/Api";
-import NavBar from "../components/NavBar";
-import Footer from "../components/Footer";
-import { isAuthenticated, logout } from "../services/Auth";
-import { Navigate, useNavigate } from "react-router-dom";
+import { useState, useEffect, useRef } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import logo from "../assets/logo.png";
-
-
+import NavBar from "../components/NavBar";
+import { Navigate, useNavigate } from "react-router-dom";
+import { isAuthenticated, logout } from "../services/Auth";
 
 const months = [
-    "January",
-    "February",
-    "March",
-    "April",
-    "May",
-    "June",
-    "July",
-    "August",
-    "September",
-    "October",
-    "November",
-    "December",
-  ];
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
+];
 
-function Dashboard() {
+const Mappy = () => {
+  const [map, setMap] = useState(null);
+  const [mapEvent, setMapEvent] = useState(null);
+  const [workouts, setWorkouts] = useState([]);
+  const formRef = useRef(null);
+  const mapRef = useRef(null);
 
-    const [map, setMap] = useState(null);
-    const [mapEvent, setMapEvent] = useState(null);
-    const [workouts, setWorkouts] = useState(() => {
-      const localData = JSON.parse(localStorage.getItem("workouts"));
-      return localData || [];
-    });
-    const [form, setForm] = useState({
-      type: "running",
-      distance: "",
-      duration: "",
-      cadence: "",
-      elevation: "",
-    });
-    const [formVisible, setFormVisible] = useState(false);
-  
-    useEffect(() => {
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-          (position) => {
-            const { latitude, longitude } = position.coords;
-            const coords = [latitude, longitude];
-            const mapInstance = L.map("map").setView(coords, 13);
-            L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
-              attribution: "&copy; OpenStreetMap contributors",
-            }).addTo(mapInstance);
-  
-            L.marker(coords)
-              .addTo(mapInstance)
-              .bindPopup("You are currently here!")
-              .openPopup();
-  
-            mapInstance.on("click", (e) => {
-              setMapEvent(e);
-              setFormVisible(true);
-            });
-  
-            workouts.forEach((workout) => {
-              renderWorkoutMarker(mapInstance, workout);
-            });
-  
-            setMap(mapInstance);
-          },
-          () => {
-            alert("Could not get your position");
-          }
-        );
-      }
-    }, [workouts]);
-  
-    useEffect(() => {
-      localStorage.setItem("workouts", JSON.stringify(workouts));
-    }, [workouts]);
-  
-    const renderWorkoutMarker = (mapInstance, workout) => {
-      L.marker(workout.coords)
-        .addTo(mapInstance)
-        .bindPopup(
-          L.popup({
-            maxWidth: 250,
-            minWidth: 100,
-            autoClose: false,
-            closeOnClick: false,
-            className: `${workout.type}-popup`,
-          }).setPopupContent(
-            `${workout.type === "running" ? "🏃‍♂️" : "🚴‍♀️"} ${workout.description}`
-          )
-        )
-        .openPopup();
-    };
-  
-    const handleFormSubmit = (e) => {
-      e.preventDefault();
-      const { type, distance, duration, cadence, elevation } = form;
-  
-      if (
-        !distance ||
-        !duration ||
-        (type === "running" && !cadence) ||
-        (type === "cycling" && !elevation)
-      ) {
-        return alert("Please fill out all fields");
-      }
-  
-      const newWorkout = {
-        id: (Date.now() + "").slice(-10),
-        coords: [mapEvent.latlng.lat, mapEvent.latlng.lng],
-        distance: +distance,
-        duration: +duration,
-        type,
-        ...(type === "running" && {
-          cadence: +cadence,
-          pace: duration / distance,
-        }),
-        ...(type === "cycling" && {
-          elevation: +elevation,
-          speed: distance / duration,
-        }),
-        date: new Date(),
-        description: `${type.charAt(0).toUpperCase() + type.slice(1)} on ${
+  useEffect(() => {
+    if (mapRef.current && navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          const coords = [latitude, longitude];
+
+          const newMap = L.map(mapRef.current).setView(coords, 13);
+
+          L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+            attribution:
+              '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+          }).addTo(newMap);
+
+          L.marker(coords).addTo(newMap).bindPopup("You are here!").openPopup();
+
+          newMap.on("click", (e) => {
+            setMapEvent(e);
+            formRef.current.classList.remove("hidden");
+            document.querySelector(".form__input--distance").focus();
+          });
+
+          setMap(newMap);
+        },
+        () => alert("Could not get your position")
+      );
+    }
+  }, [mapRef.current]);
+
+  const handleFormSubmit = (e) => {
+    e.preventDefault();
+
+    const formData = new FormData(e.target);
+    const type = formData.get("type");
+    const distance = parseFloat(formData.get("distance"));
+    const duration = parseFloat(formData.get("duration"));
+    const cadence = parseFloat(formData.get("cadence"));
+    const elevation = parseFloat(formData.get("elevation"));
+
+    if (
+      isNaN(distance) ||
+      isNaN(duration) ||
+      (type === "running" && isNaN(cadence)) ||
+      (type === "cycling" && isNaN(elevation))
+    ) {
+      alert("Inputs have to be positive!");
+      return;
+    }
+
+    const { lat, lng } = mapEvent.latlng;
+    let workout;
+
+    if (type === "running") {
+      workout = {
+        type: "running",
+        coords: [lat, lng],
+        distance,
+        duration,
+        cadence,
+        pace: duration / distance,
+        description: `Running on ${
           months[new Date().getMonth()]
         } ${new Date().getDate()}`,
       };
-  
-      setWorkouts((prevWorkouts) => [...prevWorkouts, newWorkout]);
-      renderWorkoutMarker(map, newWorkout);
-      setFormVisible(false);
-      setForm({
-        type: "running",
-        distance: "",
-        duration: "",
-        cadence: "",
-        elevation: "",
-      });
-    };
-  
-    const handleInputChange = (e) => {
-      const { name, value } = e.target;
-      setForm((prevForm) => ({
-        ...prevForm,
-        [name]: value,
-      }));
-    };
-  
-    const toggleElevationField = () => {
-      setForm((prevForm) => ({
-        ...prevForm,
-        type: prevForm.type === "running" ? "cycling" : "running",
-      }));
-    };
-  
-    const moveToPopup = (workout) => {
-      map.setView(workout.coords, 13, { animate: true, pan: { duration: 1 } });
-    };
-  
-//   const [user, setUser] = useState({ name: "", email: "", localId: "" });
-//  //Loading spinner state
-//  const [loading, setLoading] = useState(true);
-  //useEffect is used here for the component is loaded first then the Api call happens
-  //usually useEffect makes initial render
+    }
 
-//   useEffect(() => {
-//     //prevent the calling api only if it is authenticated
-//     if (isAuthenticated()) {
-//       userDetailsApi().then((response) => {
-//         setUser({
-//           name: response.data.users[0].displayName,
-//           email: response.data.users[0].email,
-//           localId: response.data.users[0].localId,
-//         });
+    if (type === "cycling") {
+      workout = {
+        type: "cycling",
+        coords: [lat, lng],
+        distance,
+        duration,
+        elevationGain: elevation,
+        speed: distance / duration,
+        description: `Cycling on ${
+          months[new Date().getMonth()]
+        } ${new Date().getDate()}`,
+      };
+    }
 
-//       });
-//     }
-//     setLoading(false)
-//   }, [setLoading]);
+    setWorkouts([...workouts, workout]);
+    localStorage.setItem("workouts", JSON.stringify([...workouts, workout]));
+
+    L.marker(workout.coords)
+      .addTo(map)
+      .bindPopup(
+        L.popup({
+          maxWidth: 250,
+          minWidth: 100,
+          autoClose: false,
+          closeOnClick: false,
+          className: `${workout.type}-popup`,
+        })
+      )
+      .setPopupContent(
+        `${workout.type === "running" ? "🏃‍♂️" : "🚴‍♀️"} ${workout.description}`
+      )
+      .openPopup();
+
+    formRef.current.classList.add("hidden");
+    e.target.reset();
+  };
+
+  useEffect(() => {
+    if (map) {
+      const storedWorkouts = JSON.parse(localStorage.getItem("workouts"));
+      if (storedWorkouts) {
+        setWorkouts(storedWorkouts);
+        storedWorkouts.forEach((workout) => {
+          L.marker(workout.coords)
+            .addTo(map)
+            .bindPopup(
+              L.popup({
+                maxWidth: 250,
+                minWidth: 100,
+                autoClose: false,
+                closeOnClick: false,
+                className: `${workout.type}-popup`,
+              })
+            )
+            .setPopupContent(
+              `${workout.type === "running" ? "🏃‍♂️" : "🚴‍♀️"} ${
+                workout.description
+              }`
+            )
+            .openPopup();
+        });
+      }
+    }
+  }, [map]);
 
   //navigate hook to redirect
   const navigate = useNavigate();
@@ -198,145 +175,137 @@ function Dashboard() {
   }
 
   return (
-    <div>
+    <>
       <NavBar logoutUser={logoutUser} />
-      <div className="flex flex-col md:flex-row h-screen">
-      <div className="sidebar bg-yellow-200 text-white flex flex-col p-4 md:p-8 w-full md:w-1/3 relative">
-        <img src={logo} alt="Logo" className="logo mb-4 md:mb-8 mx-auto" />
-        <ul className="workouts overflow-y-scroll flex-1">
-          {workouts.map((workout) => (
-            <li
-              key={workout.id}
-              className={`workout workout--${workout.type} mb-4 p-4 rounded bg-gray-700 cursor-pointer`}
-              onClick={() => moveToPopup(workout)}
+      <div className="flex h-screen">
+        <div className="w-1/3  bg-gray-800 p-8 text-white">
+          <img src={logo} alt="Logo" className="h-20 mx-auto mb-8" />
+          <ul className="list-none h-3/4 overflow-y-scroll flex flex-col space-y-7">
+            <form
+              ref={formRef}
+              className="bg-gray-700 p-6 rounded-lg hidden"
+              onSubmit={handleFormSubmit}
             >
-              <h2 className="workout__title text-base md:text-lg font-semibold">
-                {workout.description}
-              </h2>
-              <div className="workout__details">
-                <span className="workout__icon">
-                  {workout.type === "running" ? "🏃‍♂️" : "🚴‍♀️"}
-                </span>
-                <span className="workout__value">{workout.distance}</span> km
+              <div className="mb-4">
+                <label className="block text-lg font-semibold mb-2">Type</label>
+                <select name="type" className="w-full p-2 bg-gray-600 rounded">
+                  <option value="running">Running</option>
+                  <option value="cycling">Cycling</option>
+                </select>
               </div>
-              <div className="workout__details">
-                <span className="workout__icon">⏱</span>
-                <span className="workout__value">{workout.duration}</span> min
+              <div className="mb-4">
+                <label className="block text-lg font-semibold mb-2">
+                  Distance
+                </label>
+                <input
+                  name="distance"
+                  type="number"
+                  placeholder="km"
+                  className="w-full p-2 bg-gray-600 rounded"
+                />
               </div>
-              {workout.type === "running" && (
-                <>
-                  <div className="workout__details">
-                    <span className="workout__icon">⚡️</span>
-                    <span className="workout__value">
-                      {workout.pace.toFixed(1)}
-                    </span>{" "}
-                    min/km
-                  </div>
-                  <div className="workout__details">
-                    <span className="workout__icon">🦶🏼</span>
-                    <span className="workout__value">
-                      {workout.cadence}
-                    </span>{" "}
-                    spm
-                  </div>
-                </>
-              )}
-              {workout.type === "cycling" && (
-                <>
-                  <div className="workout__details">
-                    <span className="workout__icon">⚡️</span>
-                    <span className="workout__value">
-                      {workout.speed.toFixed(1)}
-                    </span>{" "}
-                    km/h
-                  </div>
-                  <div className="workout__details">
-                    <span className="workout__icon">⛰</span>
-                    <span className="workout__value">
-                      {workout.elevation}
-                    </span>{" "}
-                    m
-                  </div>
-                </>
-              )}
-            </li>
-          ))}
-        </ul>
-     
-       
-    
-        {formVisible && (
-          <form
-            className="form bg-gray-700 text-white p-4 rounded absolute bottom-4 left-4 md:bottom-8 md:left-8 w-full md:max-w-sm"
-            onSubmit={handleFormSubmit}
-          >
-            <div className="form__row">
-              <label className="form__label">Type</label>
-              <select
-                name="type"
-                value={form.type}
-                onChange={toggleElevationField}
-                className="form__input"
-              >
-                <option value="running">Running</option>
-                <option value="cycling">Cycling</option>
-              </select>
-            </div>
-            <div className="form__row">
-              <label className="form__label">Distance</label>
-              <input
-                name="distance"
-                value={form.distance}
-                onChange={handleInputChange}
-                className="form__input"
-                placeholder="km"
-              />
-            </div>
-            <div className="form__row">
-              <label className="form__label">Duration</label>
-              <input
-                name="duration"
-                value={form.duration}
-                onChange={handleInputChange}
-                className="form__input"
-                placeholder="min"
-              />
-            </div>
-            {form.type === "running" && (
-              <div className="form__row">
-                <label className="form__label">Cadence</label>
+              <div className="mb-4">
+                <label className="block text-lg font-semibold mb-2">
+                  Duration
+                </label>
+                <input
+                  name="duration"
+                  type="number"
+                  placeholder="min"
+                  className="w-full p-2 bg-gray-600 rounded"
+                />
+              </div>
+              <div className="mb-4">
+                <label className="block text-lg font-semibold mb-2">
+                  Cadence
+                </label>
                 <input
                   name="cadence"
-                  value={form.cadence}
-                  onChange={handleInputChange}
-                  className="form__input"
-                  placeholder="step/min"
+                  type="number"
+                  placeholder="steps/min"
+                  className="w-full p-2 bg-gray-600 rounded"
                 />
               </div>
-            )}
-            {form.type === "cycling" && (
-              <div className="form__row">
-                <label className="form__label">Elevation Gain</label>
+              <div className="mb-4">
+                <label className="block text-lg font-semibold mb-2">
+                  Elevation Gain
+                </label>
                 <input
                   name="elevation"
-                  value={form.elevation}
-                  onChange={handleInputChange}
-                  className="form__input"
+                  type="number"
                   placeholder="meters"
+                  className="w-full p-2 bg-gray-600 rounded"
                 />
               </div>
-            )}
-            <button className="form__btn col-span-2 mt-4 bg-green-600 hover:bg-green-500 text-white py-2 rounded">
-              OK
-            </button>
-          </form>
-        )}
+              <button
+                type="submit"
+                className="bg-blue-500 text-white p-2 rounded w-full"
+              >
+                OK
+              </button>
+            </form>
+            <ul>
+              {workouts.map((workout) => (
+                <li
+                  key={workout.description}
+                  className={`flex text-wrap gap-2 justify-center items-center  bg-gray-700 p-4 mb-4 rounded-lg cursor-pointer ${
+                    workout.type === "running"
+                      ? "border-l-4 border-blue-500"
+                      : "border-l-4 border-yellow-500"
+                  }`}
+                >
+                  <h2 className="text-sm font-semibold mb-2">
+                    {workout.description}
+                  </h2>
+                  <div className="flex items-baseline mb-2">
+                    <span className="text-sm mr-2">
+                      {workout.type === "running" ? "🏃‍♂️" : "🚴‍♀️"}
+                    </span>
+                    <span className="text-sm">{workout.distance} km</span>
+                  </div>
+                  <div className="flex items-baseline mb-2">
+                    <span className="text-sm mr-2">⏱</span>
+                    <span className="text-sm">{workout.duration} min</span>
+                  </div>
+                  {workout.type === "running" && (
+                    <>
+                      <div className="flex items-baseline mb-2">
+                        <span className="text-sm mr-2">⚡️</span>
+                        <span className="text-sm">
+                          {workout.pace.toFixed(1)} min/km
+                        </span>
+                      </div>
+                      <div className="flex items-baseline">
+                        <span className="text-sm mr-2">🦶🏼</span>
+                        <span className="text-sm">{workout.cadence} spm</span>
+                      </div>
+                    </>
+                  )}
+                  {workout.type === "cycling" && (
+                    <>
+                      <div className="flex items-baseline mb-2">
+                        <span className="text-sm mr-2">⚡️</span>
+                        <span className="text-sm">
+                          {workout.speed.toFixed(1)} km/h
+                        </span>
+                      </div>
+                      <div className="flex items-baseline">
+                        <span className="text-sm mr-2">⛰️</span>
+                        <span className="text-sm">
+                          {workout.elevationGain} m
+                        </span>
+                      </div>
+                    </>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </ul>
+        </div>
+        <div ref={mapRef} className="w-3/4 h-full" />
       </div>
-      <div id="map" className="flex-1"></div>
-    </div>
-      <Footer />
-    </div>
+    </>
   );
-}
+};
 
-export default Dashboard;
+export default Mappy;

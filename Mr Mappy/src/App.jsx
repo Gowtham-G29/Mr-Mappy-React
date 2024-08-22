@@ -1,5 +1,5 @@
 import Landpage from "./Landpage";
-import Dashboard from "../../../Mr.Mappy_project-main/dash";
+// import Dashboard from "../../../Mr.Mappy_project-main/dash";
 import LoginPage from "./pages/LoginPage";
 import Register from "./pages/Register";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
