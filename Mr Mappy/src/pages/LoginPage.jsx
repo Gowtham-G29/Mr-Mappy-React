@@ -76,7 +76,7 @@ function LoginPage() {
 
   if (isAuthenticated()) {
     //redirecting user to dashboard
-    return <Navigate to="/dashboard" />;
+    return <Navigate to="/dashboard"/>;
   }
 
   const handleInput = (event) => {

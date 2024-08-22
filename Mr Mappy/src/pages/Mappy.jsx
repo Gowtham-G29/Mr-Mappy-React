@@ -201,7 +201,7 @@ function Dashboard() {
     <div>
       <NavBar logoutUser={logoutUser} />
       <div className="flex flex-col md:flex-row h-screen">
-      <div className="sidebar bg-gray-800 text-white flex flex-col p-4 md:p-8 w-full md:w-1/3 relative">
+      <div className="sidebar bg-yellow-200 text-white flex flex-col p-4 md:p-8 w-full md:w-1/3 relative">
         <img src={logo} alt="Logo" className="logo mb-4 md:mb-8 mx-auto" />
         <ul className="workouts overflow-y-scroll flex-1">
           {workouts.map((workout) => (
@@ -262,17 +262,9 @@ function Dashboard() {
             </li>
           ))}
         </ul>
-        <p className="copyright mt-auto text-center text-gray-500">
-          &copy; Copyright by
-          <a
-            className="twitter-link ml-1 text-gray-500 hover:text-gray-300"
-            target="_blank"
-            rel="noopener noreferrer"
-            href="https://www.linkedin.com/in/gowtham-g-b21b26282/"
-          >
-            Gowtham-G29
-          </a>
-        </p>
+     
+       
+    
         {formVisible && (
           <form
             className="form bg-gray-700 text-white p-4 rounded absolute bottom-4 left-4 md:bottom-8 md:left-8 w-full md:max-w-sm"
