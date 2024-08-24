@@ -7,7 +7,6 @@ import NavBar from "../components/NavBar";
 import Footer from "../components/Footer";
 
 function Register() {
-  //error state
   const initilaState = {
     email: { required: false },
     password: { required: false },
@@ -16,48 +15,49 @@ function Register() {
   };
 
   const [errors, setErrors] = useState(initilaState);
-  //Loading spinner state
   const [loading, setLoading] = useState(false);
+  const [inputs, setInputs] = useState({
+    email: "",
+    name: "",
+    password: "",
+  });
 
-  //form submit function
-  //form validation
   const handleSubmit = (event) => {
     event.preventDefault();
     let errors = initilaState;
     let hasError = false;
 
-    if (inputs.name == "") {
+    if (inputs.name === "") {
       errors.name.required = true;
       hasError = true;
     }
-    if (inputs.email == "") {
+    if (inputs.email === "") {
       errors.email.required = true;
       hasError = true;
     }
-    if (inputs.password == "") {
+    if (inputs.password === "") {
       errors.password.required = true;
       hasError = true;
     }
 
-    if (hasError != true) {
-      //sending api request
+    if (!hasError) {
       setLoading(true);
       RegisterApi(inputs)
         .then((response) => {
           storeUserData(response.data.idToken);
         })
         .catch((err) => {
-          if (err.response.data.error.message == "EMAIL_EXISTS") {
+          if (err.response.data.error.message === "EMAIL_EXISTS") {
             setErrors({
               ...errors,
-              custom_error: "Already this email has been registered !",
+              custom_error: "This email has already been registered!",
             });
           } else if (
             String(err.response.data.error.message).includes("WEAK_PASSWORD")
           ) {
             setErrors({
               ...errors,
-              custom_error: "Password should be atleast 6 characters !",
+              custom_error: "Password should be at least 6 characters!",
             });
           }
         })
@@ -65,40 +65,28 @@ function Register() {
           setLoading(false);
         });
     }
-    setErrors({ ...errors }); //correct
-
-    // setErrors(errors); //wrong
+    setErrors({ ...errors });
   };
-
-  //form validation
-  const [inputs, setInputs] = useState({
-    email: "",
-    name: "",
-    password: "",
-  });
 
   const handleInput = (event) => {
     setInputs({ ...inputs, [event.target.name]: event.target.value });
   };
 
-  //redirection
-
   if (isAuthenticated()) {
-    //redirecting user to dashboard
     return <Navigate to="/login" />;
   }
 
   return (
     <div>
-      <NavBar/>
-      <section className="register-block py-20 bg-yellow-200">
-        <div className="container mx-auto">
+      <NavBar />
+      <section className="register-block py-20 bg-hero-pattern min-h-screen flex items-center">
+        <div className="container mx-auto px-4">
           <div className="flex justify-center">
-            <div className="w-full max-w-md bg-white p-8 shadow-md rounded-lg">
+            <div className="w-full max-w-lg bg-slate-200 p-8 shadow-md rounded-lg">
               <h2 className="text-center text-2xl font-bold mb-6">
                 Register Now
               </h2>
-              <form onSubmit={handleSubmit} className="register-form" action="">
+              <form onSubmit={handleSubmit} className="register-form">
                 <div className="form-group mb-4">
                   <label
                     htmlFor="name"
@@ -113,12 +101,11 @@ function Register() {
                     id="name"
                     onChange={handleInput}
                   />
-
-                  {errors.name.required ? (
+                  {errors.name.required && (
                     <span className="text-red-500 text-sm">
                       Name is required.
                     </span>
-                  ) : null}
+                  )}
                 </div>
                 <div className="form-group mb-4">
                   <label
@@ -128,17 +115,17 @@ function Register() {
                     Email
                   </label>
                   <input
-                    type="text"
+                    type="email"
                     className="form-control w-full p-2 border border-gray-300 rounded mt-1"
                     name="email"
                     id="email"
                     onChange={handleInput}
                   />
-                  {errors.email.required ? (
+                  {errors.email.required && (
                     <span className="text-red-500 text-sm">
                       Email is required.
                     </span>
-                  ) : null}
+                  )}
                 </div>
                 <div className="form-group mb-4">
                   <label
@@ -154,26 +141,24 @@ function Register() {
                     id="password"
                     onChange={handleInput}
                   />
-
-                  {errors.password.required ? (
+                  {errors.password.required && (
                     <span className="text-red-500 text-sm">
                       Password is required.
                     </span>
-                  ) : null}
+                  )}
                 </div>
                 <div className="form-group mb-4">
-                  <span className="text-red-500 text-sm">
-                    {/* custom error */}
+                  {errors.custom_error && (
+                    <span className="text-red-500 text-sm text-center">
+                      <p>{errors.custom_error}</p>
+                    </span>
+                  )}
 
-                    {errors.custom_error ? <p>{errors.custom_error}</p> : null}
-                  </span>
-
-                  {/* //Loading spinner */}
-                  {loading ? (
+                  {loading && (
                     <div className="text-center my-4">
                       <div className="animate-spin inline-block w-6 h-6 border-4 border-blue-500 border-t-transparent rounded-full"></div>
                     </div>
-                  ) : null}
+                  )}
 
                   <input
                     type="submit"
@@ -182,9 +167,8 @@ function Register() {
                     disabled={loading}
                   />
                 </div>
-                <div className="clearfix"></div>
-                <div className="form-group text-center text-sm">
-                  Already have an account? Please{" "}
+                <div className="text-center text-sm mt-4">
+                  Already have an account?{" "}
                   <Link to="/login" className="text-blue-500">
                     Login
                   </Link>
@@ -194,7 +178,7 @@ function Register() {
           </div>
         </div>
       </section>
-      <Footer/>
+      <Footer />
     </div>
   );
 }

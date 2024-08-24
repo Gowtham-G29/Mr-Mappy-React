@@ -5,7 +5,7 @@ import NavBar from "./components/NavBar";
 function Landpage() {
   return (
     <div>
-      <NavBar />
+      <NavBar/>
       <Main />
       <Footer />
     </div>

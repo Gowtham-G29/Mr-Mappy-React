@@ -10,61 +10,43 @@ function LoginPage() {
   const initilaState = {
     email: { required: false },
     password: { required: false },
-    // name: { required: false },
     custom_error: null,
   };
 
   const [errors, setErrors] = useState(initilaState);
-  //Loading spinner state
   const [loading, setLoading] = useState(false);
-
   const [inputs, setInputs] = useState({
     email: "",
     password: "",
   });
 
-  //form validation
   const handleSubmit = (event) => {
     event.preventDefault();
     let errors = initilaState;
     let hasError = false;
 
-    if (inputs.email == "") {
+    if (inputs.email === "") {
       errors.email.required = true;
       hasError = true;
     }
-    if (inputs.password == "") {
+    if (inputs.password === "") {
       errors.password.required = true;
       hasError = true;
     }
 
-    if (hasError != true) {
-      //sending  Login api request
+    if (!hasError) {
       setLoading(true);
       LoginApi(inputs)
         .then((response) => {
           storeUserData(response.data.idToken);
         })
         .catch((err) => {
-          if (err.code == "ERR_BAD_REQUEST") {
+          if (err.code === "ERR_BAD_REQUEST") {
             setErrors({
               ...errors,
               custom_error: "Invalid Credentials.",
             });
           }
-          //   if (err.response.data.error.message == "EMAIL_EXISTS") {
-          //     setErrors({
-          //       ...errors,
-          //       custom_error: "Already this email has been registered !",
-          //     });
-          //   } else if (
-          //     String(err.response.data.error.message).includes("WEAK_PASSWORD")
-          //   ) {
-          //     setErrors({
-          //       ...errors,
-          //       custom_error: "Password should be atleast 6 characters !",
-          //     });
-          //   }
         })
         .finally(() => {
           setLoading(false);
@@ -75,8 +57,7 @@ function LoginPage() {
   };
 
   if (isAuthenticated()) {
-    //redirecting user to dashboard
-    return <Navigate to="/dashboard"/>;
+    return <Navigate to="/dashboard" />;
   }
 
   const handleInput = (event) => {
@@ -85,12 +66,14 @@ function LoginPage() {
 
   return (
     <div>
-      <NavBar/>
-      <section className="min-h-screen flex items-center justify-center bg-yellow-200">
-        <div className="container mx-auto">
+      <NavBar />
+      <section className="min-h-screen flex items-center justify-center bg-hero-pattern ">
+        <div className="container mx-auto px-4">
           <div className="flex justify-center">
-            <div className="w-full max-w-md bg-white p-8 rounded-lg shadow-md">
-              <h2 className="text-2xl font-bold text-center mb-6">Login Now</h2>
+            <div className="w-full max-w-md bg-slate-200 p-8 rounded-lg shadow-md">
+              <h2 className="text-2xl font-bold text-center mb-6">
+                Login Now
+              </h2>
               <form onSubmit={handleSubmit} className="login-form">
                 <div className="mb-4">
                   <label
@@ -106,11 +89,11 @@ function LoginPage() {
                     placeholder="email"
                     onChange={handleInput}
                   />
-                  {errors.email.required ? (
+                  {errors.email.required && (
                     <span className="text-red-500 text-sm">
                       Email is required.
                     </span>
-                  ) : null}{" "}
+                  )}
                 </div>
                 <div className="mb-4">
                   <label
@@ -126,29 +109,24 @@ function LoginPage() {
                     placeholder="password"
                     onChange={handleInput}
                   />
-                  {errors.password.required ? (
+                  {errors.password.required && (
                     <span className="text-red-500 text-sm">
                       Password is required.
                     </span>
-                  ) : null}
+                  )}
                 </div>
                 <div className="mb-4">
-                  {/* //Loading spinner */}
-                  {loading ? (
+                  {loading && (
                     <div className="text-center my-4">
                       <div className="animate-spin inline-block w-6 h-6 border-4 border-blue-500 border-t-transparent rounded-full"></div>
                     </div>
-                  ) : null}
+                  )}
 
-                  <div className="text-red-500 text-center">
-                    <span className="text-red-500 text-sm">
-                      {/* custom error */}
-
-                      {errors.custom_error ? (
-                        <p>{errors.custom_error}</p>
-                      ) : null}
-                    </span>
-                  </div>
+                  {errors.custom_error && (
+                    <div className="text-red-500 text-center">
+                      <p>{errors.custom_error}</p>
+                    </div>
+                  )}
 
                   <input
                     type="submit"
@@ -171,7 +149,7 @@ function LoginPage() {
           </div>
         </div>
       </section>
-      <Footer/>
+      <Footer />
     </div>
   );
 }

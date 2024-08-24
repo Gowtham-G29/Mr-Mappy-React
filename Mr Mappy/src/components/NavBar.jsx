@@ -1,61 +1,129 @@
-import { useNavigate } from "react-router-dom";
-import symbol from "../assets/symbol.png";
-import { isAuthenticated } from "../services/Auth";
+import AppBar from "@mui/material/AppBar";
+import Box from "@mui/material/Box";
+import Toolbar from "@mui/material/Toolbar";
+import Typography from "@mui/material/Typography";
+import Button from "@mui/material/Button";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import WhereToVoteIcon from "@mui/icons-material/WhereToVote";
+import TemporaryDrawer from "./SideDrawer";
+import { useEffect, useState } from "react";
 
-function NavBar(props) {
+export default function ButtonAppBar() {
+  const [buttonState, setButtonState] = useState(false);
+  const [homestate, setHomeState] = useState(true);
   const navigate = useNavigate(); // Initialize the useNavigate hook
+  const location = useLocation();
+
+  // Update buttonState based on the current path
+  useEffect(() => {
+    const pathsWithButton = ["/login"];
+    setButtonState(pathsWithButton.includes(location.pathname));
+  }, [location.pathname]);
+
+  useEffect(() => {
+    const pathsWithButton = ["/"];
+    setHomeState(pathsWithButton.includes(location.pathname));
+  }, [location.pathname]);
 
   function navigateRegister() {
     navigate("/register"); // Navigate to the /register route
   }
 
-  function navigateLogin(){
-    navigate('/login');
+  function navigateLogin() {
+    navigate("/login");
+  }
+
+  function navigationHome() {
+    navigate("/");
   }
 
   return (
-    <div
-      className="sticky flex justify-around gap-x-20 font-bold bg-yellow-300 text-slate-700
-        py-10"
-    >
-      <div className="flex justify-center items-center">
-        <img src={symbol} height={50} width={50} alt="Symbol" />
-        <h2 className="text-2xl ">Mr Mappy</h2>
-      </div>
+    <div>
+      <Box sx={{ flexGrow: 1 }}>
+        <AppBar
+          position="static"
+          className="py-5 bg-gradient-to-r from-sky-500 to-indigo-500"
+        >
+          <Toolbar>
+            <div>
+              {/* Show drawer on smaller screens */}
+              <div className="block laptop:hidden ">
+                <TemporaryDrawer />
+              </div>
+            </div>
 
-      <div className="flex gap-10 justify-center items-center">
-        <p>Help?</p>
-        <p>Contact</p>
+            {/* Icon and title, which will always be visible */}
+            <WhereToVoteIcon
+              fontSize="large"
+              onClick={navigationHome}
+              sx={{ cursor: "pointer" }}
+            />
 
-        {isAuthenticated() ? (
-          <button
-            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full"
-            // eslint-disable-next-line react/prop-types
-            onClick={props.logoutUser}
-          >
-            Logout
-          </button>
-        ) : (
-          <div className="space-x-3">
-            {/* //register button */}
-            <button
-              onClick={navigateRegister} // Call the function directly
-              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full"
+            <Typography
+              variant="h5"
+              component="div"
+              sx={{ flexGrow: 1, cursor: "pointer", fontWeight: "bolder" }}
+              onClick={navigationHome}
             >
-              register
-            </button>
+              Mr.Mappy
+            </Typography>
 
-            <button
-              onClick={navigateLogin} // Call the function directly
-              className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-full"
-            >
-              Login
-            </button>
-          </div>
-        )}
-      </div>
+            {!buttonState ? (
+              <div className=" laptop:hidden">
+                <Button
+                  onClick={navigateLogin}
+                  sx={{
+                    backgroundColor: "#387F39",
+                    color: "white",
+                  }}
+                >
+                  Sign In
+                </Button>
+              </div>
+            ) : (
+              <div className=" laptop:hidden">
+                <Button
+                  onClick={navigateRegister}
+                  variant="contained"
+                  color="success"
+                >
+                  Sign Up
+                </Button>
+              </div>
+            )}
+
+            {/* Show buttons and links on larger screens */}
+            <div className=" hidden laptop:flex space-x-5 items-center">
+              {!homestate ? (
+                <Link to="/">
+                  <Typography variant="h6">Home</Typography>
+                </Link>
+              ) : null}
+
+              <Typography variant="h6">About</Typography>
+              <Typography variant="h6">Help?</Typography>
+
+              {buttonState ? (
+                <Button
+                  onClick={navigateRegister}
+                  variant="contained"
+                  color="success"
+                >
+                  Register
+                </Button>
+              ) : (
+                <Button
+                  color="inherit"
+                  onClick={navigateLogin}
+                  sx={{ backgroundColor: "green" }}
+                >
+                  Login
+                </Button>
+              )}
+            </div>
+          </Toolbar>
+        </AppBar>
+      </Box>
     </div>
   );
 }
-
-export default NavBar;
