@@ -72,10 +72,8 @@ export default function ButtonAppBar() {
               <div className=" laptop:hidden">
                 <Button
                   onClick={navigateLogin}
-                  sx={{
-                    backgroundColor: "#387F39",
-                    color: "white",
-                  }}
+                  variant="contained"
+                  color="success"
                 >
                   Sign In
                 </Button>
@@ -113,9 +111,10 @@ export default function ButtonAppBar() {
                 </Button>
               ) : (
                 <Button
-                  color="inherit"
                   onClick={navigateLogin}
-                  sx={{ backgroundColor: "green" }}
+                  variant="contained"
+                  color="success"
+                 
                 >
                   Login
                 </Button>

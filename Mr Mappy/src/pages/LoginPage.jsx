@@ -67,7 +67,7 @@ function LoginPage() {
   return (
     <div>
       <NavBar />
-      <section className="min-h-screen flex items-center justify-center bg-hero-pattern ">
+      <section className="min-h-screen flex items-center justify-center bg-hero-pattern  ">
         <div className="container mx-auto px-4">
           <div className="flex justify-center">
             <div className="w-full max-w-md bg-slate-200 p-8 rounded-lg shadow-md">
