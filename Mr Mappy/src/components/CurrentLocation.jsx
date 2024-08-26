@@ -4,7 +4,7 @@ import Fab from "@mui/material/Fab";
 
 import NavigationIcon from "@mui/icons-material/Navigation";
 
-export default function CurrentPosition({focusOnCurrentPosition}) {
+export default function CurrentPosition() {
   return (
     <Box sx={{ "& > :not(style)": { m: 1 } }}>
       <Fab
@@ -14,7 +14,7 @@ export default function CurrentPosition({focusOnCurrentPosition}) {
           bottom: 16,
           right: 16,
         }}
-        onClick={focusOnCurrentPosition}
+        
       >
         <NavigationIcon sx={{ mr: 1 }} />
         Navigate

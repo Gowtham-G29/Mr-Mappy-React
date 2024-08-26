@@ -33,7 +33,7 @@ const Mappy = () => {
   const [currentPosition, setCurrentPosition] = useState(null);
 
   useEffect(() => {
-    if (mapRef.current && navigator.geolocation) {
+    if (mapRef.current ) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
           console.log(position);
@@ -63,10 +63,14 @@ const Mappy = () => {
             setMap(newMap);
           }
         },
-        () => alert("Could not get your position")
+        (err) => 
+         console.log(JSON.stringify(err))
       );
     }
   }, [mapRef.current]);
+
+
+  
 
   const focusOnCurrentPosition = () => {
     if (map && currentPosition) {
@@ -217,7 +221,7 @@ const Mappy = () => {
 
   return (
     <>
-      <div className="flex h-screen">
+      <div className="flex h-screen ">
         <div className="w-1/3 bg-gray-800 p-8 text-white">
           <img src={logo} alt="Logo" className="h-20 mx-auto mb-8" />
           <ul className="list-none h-3/4 overflow-y-scroll flex flex-col space-y-7">

@@ -6,14 +6,16 @@ import LogoutIcon from "@mui/icons-material/Logout";
 export default function FloatingActionButtonExtendedSize({logoutUser}) {
   return (
     <Box sx={{ "& > :not(style)": { m: 1 } }}>
-      <Fab
+      <Fab 
+      className="bg-gradient-to-r from-sky-500 to-indigo-500"
         variant="extended"
-        color="primary"
+        
         onClick={logoutUser}
         sx={{
           position: "absolute",
-          top: 16,
+          top: 80,
           right: 16,
+          color:'white'
         }}
       >
         <LogoutIcon />

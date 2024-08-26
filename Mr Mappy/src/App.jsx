@@ -3,7 +3,8 @@ import Landpage from "./Landpage";
 import LoginPage from "./pages/LoginPage";
 import Register from "./pages/Register";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Mappy from "./pages/Mappy";
+import Dashboard from "./pages/Dashboard";
+import MapComponent from "./components/MapComponent";
 
 export default function App() {
   return (
@@ -11,11 +12,11 @@ export default function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/register" element={<Register />} />
-          <Route path="/dashboard" element={<Mappy/>} />
+          <Route path="/dashboard" element={<Dashboard/>} />
           <Route path="/" element={<Landpage />} />
           <Route path="*" element={<h1>404 - Page Not Found</h1>} />
           <Route path="/login" element={<LoginPage />} />
-          <Route path="/Mappy" element={<Mappy />} />
+          <Route path="/Mappy" element={<MapComponent/>} />
         </Routes>
       </BrowserRouter>
     </div>
